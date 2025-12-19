@@ -197,7 +197,7 @@ job_t* job_new(pid_t pid, unsigned int id, unsigned int priority,
  * NULL is returned if length of src->label is not MAX_NAME_SIZE - 1.
  * errno is set as specified for job_new.
  */
-job_t* job_copy(job_t* dst, job_t* src);
+job_t* job_copy(job_t* src, job_t* dst);
 
 /* 
  * job_init(job_t* job)
@@ -268,9 +268,7 @@ bool job_is_equal(job_t* j1, job_t* j2);
  *
  * Return:
  * On success: the job pointer is returned. If job is NULL, this function has
- * no effect and the NULL pointer is returned. If the fields of the job are 
- * already equal to the pid, id, priority and label parameters to job_set, this
- * function has no effect.
+ * no effect and the NULL pointer is returned.
  *
  * Note: this function does not dynamically allocate memory
  */
@@ -285,7 +283,7 @@ job_t* job_set(job_t* job, pid_t pid, unsigned int id, unsigned int priority,
  * For example, a job with pid 1, id 2, priority 3 and label 
  * "newjob*************************" will have the following string 
  * representation:
- *  "pid:0000001,id:00002,priority:00003,label:newjob*************************"
+ *  "pid:0000001,id:00002,pri:00003,label:newjob*************************"
  *
  * Parameters:
  * job - a non-NULL pointer to the job to create a string representation for. 
@@ -315,7 +313,7 @@ char* job_to_str(job_t* job, char* str);
  * 
  * Convert the given str that represents a job as specified by JOB_STR_FMT
  * to a job. For example, if str is:
- *  "pid:0000001,id:00002,priority:00003,label:newjob*************************"
+ *  "pid:0000001,id:00002,pri:00003,label:newjob*************************"
  *
  * it will be converted to a job with pid 1, id 2, priority 3 and label 
  * "newjob*************************".
