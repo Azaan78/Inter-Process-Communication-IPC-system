@@ -82,10 +82,10 @@ bool ipc_jobqueue_is_full(ipc_jobqueue_t* ijq) {
  */
 job_t* ipc_jobqueue_peek(ipc_jobqueue_t* ijq, job_t* dst) {
     if (!ijq)
-        return pri_jobqueue_peekhead(NULL, dst);
+        return pri_jobqueue_peek(NULL, dst);
 
     do_critical_work(ijq->proc);
-    return pri_jobqueue_peekhead((pri_jobqueue_t*) ijq->addr, dst);
+    return pri_jobqueue_peek((pri_jobqueue_t*) ijq->addr, dst);
 }
 
 /* 

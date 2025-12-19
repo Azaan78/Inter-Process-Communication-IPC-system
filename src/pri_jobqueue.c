@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include "pri_jobqueue.h"
 
+#include <limits.h>
+
 /* 
  * TODO: you must implement this function that allocates a job queue and 
  * initialise it.
@@ -72,7 +74,7 @@ job_t* pri_jobqueue_dequeue(pri_jobqueue_t* pjq, job_t* dst) {
         job_copy(dst, &pjq->jobs[best_index]);
         result = dst;
     } else {
-        result = job_new();
+        result = job_new(job->pid, job->id, job->priority, job->label);
         if (result == NULL) {
             return NULL;
         }
@@ -175,7 +177,7 @@ job_t* pri_jobqueue_peek(pri_jobqueue_t* pjq, job_t* dst) {
         job_copy(dst, &pjq->jobs[best_index]);
         result = dst;
     } else {
-        result = job_new();
+        result = job_new(job->pid, job->id, job->priority, job->label);
         if (result == NULL) {
             return NULL;
         }
