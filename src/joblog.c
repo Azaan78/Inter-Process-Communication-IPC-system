@@ -1,6 +1,6 @@
 /*
  * Replace the following string of 0s with your student number
- * 000000000
+ * 240297260
  */
 #include <stdio.h>
 #include <unistd.h>
@@ -32,6 +32,7 @@ static char* new_log_name(proc_t* proc) {
     return log_name;
 }
 
+
 /* 
  * DO NOT EDIT the joblog_init function that sets up the log directory 
  * if it does not already exist.
@@ -61,6 +62,7 @@ int joblog_init(proc_t* proc) {
     return r;
 }
 
+
 /* 
  * TODO: you must implement this function.
  * Hints:
@@ -69,8 +71,50 @@ int joblog_init(proc_t* proc) {
  * - see job.h for a function to create a job from its string representation
  */
 job_t* joblog_read(proc_t* proc, int entry_num, job_t* job) {
+    int saved_errno = errno;
+
+    if (!proc || entry_num < 0) {
+        errno = saved_errno;
+        return NULL;
+    }
+
+    char* filename = new_log_name(proc);
+    if (!filename) {
+        errno = saved_errno;
+        return NULL;
+    }
+
+    FILE* fp = fopen(filename, "r");
+    free(filename);
+
+    if (!fp) {
+        errno = saved_errno;
+        return NULL;
+    }
+
+    char buf[JOB_STR_SIZE + 1];
+    int current = 0;
+
+    while (fgets(buf, sizeof(buf), fp)) {
+        if (current == entry_num) {
+            fclose(fp);
+
+            if (!job)
+                job = job_new_from_str(buf);
+            else
+                job_from_str(buf, job);
+
+            errno = saved_errno;
+            return job;
+        }
+        current++;
+    }
+
+    fclose(fp);
+    errno = saved_errno;
     return NULL;
 }
+
 
 /* 
  * TODO: you must implement this function.
@@ -79,12 +123,56 @@ job_t* joblog_read(proc_t* proc, int entry_num, job_t* job) {
  * - see the hint for joblog_read
  */
 void joblog_write(proc_t* proc, job_t* job) {
-    return;
+    int saved_errno = errno;
+
+    if (!proc || !job) {
+        errno = saved_errno;
+        return;
+    }
+
+    char* filename = new_log_name(proc);
+    if (!filename) {
+        errno = saved_errno;
+        return;
+    }
+
+    FILE* fp = fopen(filename, "a");
+    if (!fp) {
+        free(filename);
+        errno = saved_errno;
+        return;
+    }
+
+    char buf[JOB_STR_SIZE + 1];
+    job_to_str(job, buf);
+
+    fprintf(fp, "%s\n", buf);
+
+    fclose(fp);
+    free(filename);
+    errno = saved_errno;
 }
+
 
 /* 
  * TODO: you must implement this function.
  */
 void joblog_delete(proc_t* proc) {
-    return;
+    int saved_errno = errno;
+
+    if (!proc) {
+        errno = saved_errno;
+        return;
+    }
+
+    char* filename = new_log_name(proc);
+    if (!filename) {
+        errno = saved_errno;
+        return;
+    }
+
+    unlink(filename);
+    free(filename);
+
+    errno = saved_errno;
 }

@@ -61,7 +61,7 @@ void job_init(job_t* job) {
     job->id = 0;
     job->priority = 0;
     //Replaces label with padded string for initialisation
-    strncpy(job->label, PAD_STRING, MAX_NAME_SIZE - 1);
+    memcpy(job->label, PAD_STRING, MAX_NAME_SIZE - 1);
     job->label[MAX_NAME_SIZE - 1] = '\0';
 }
 
@@ -96,6 +96,13 @@ job_t* job_set(job_t* job, pid_t pid, unsigned int id, unsigned int priority,
     const char* label) {
     //If job is NULL then return NULL
     if (job == NULL) return NULL;
+
+	if (job->pid == pid &&
+		job->id == id &&
+		job->priority == priority &&
+		label != NULL &&
+		strcmp(job->label, label) == 0) {
+		return job;}
 
     //Loading the current data
     job->pid = pid;
@@ -141,7 +148,8 @@ char* job_to_str(job_t* job, char* str) {
         if (str == NULL) return NULL;
     }
 
-    snprintf(str, JOB_STR_SIZE, JOB_STR_FMT, job->pid, job->id, job->priority, job->label);
+    snprintf(str, JOB_STR_SIZE, JOB_STR_FMT, job->pid,
+			 job->id, job->priority, job->label);
 
     return str;
 }
@@ -168,7 +176,8 @@ job_t* str_to_job(char* str, job_t* job) {
     unsigned int id_temp, pri_temp;
     char labelbuf[MAX_NAME_SIZE];
 
-    int matched = sscanf(str, JOB_STR_FMT, &pid_temp, &id_temp, &pri_temp, labelbuf);
+    int matched = sscanf(str, JOB_STR_FMT,
+	&pid_temp, &id_temp, &pri_temp, labelbuf);
 
     if (matched != 4 || strlen(labelbuf) != MAX_NAME_SIZE - 1) {
         if (assigned) free(job);
@@ -189,6 +198,8 @@ job_t* str_to_job(char* str, job_t* job) {
  * - look at the allocation of a job in job_new
  */
 void job_delete(job_t* job) {
-	if (job != NULL) free(job);
+	if (job != NULL) {
+		free(job);}
 		return;
 }
+

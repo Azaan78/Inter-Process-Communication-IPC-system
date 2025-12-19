@@ -1,6 +1,6 @@
 /*
  * Replace the following string of 0s with your student number
- * 000000000
+ * 240297260
  */
 #include <stdlib.h>
 #include <stdbool.h>
@@ -13,14 +13,28 @@
  * - see job_new in job.c
  */
 pri_jobqueue_t* pri_jobqueue_new() {
-    return NULL;
+    pri_jobqueue_t* pjq = malloc(sizeof(pri_jobqueue_t));
+    if (pjq == NULL) {
+        return NULL;
+    }
+    pri_jobqueue_init(pjq);
+    return pjq;
 }
 
 /* 
  * TODO: you must implement this function.
  */
 void pri_jobqueue_init(pri_jobqueue_t* pjq) {
-    return;
+    if (pjq == NULL) {
+        return;
+    }
+
+    pjq->buf_size = JOB_BUFFER_SIZE;
+    pjq->size = 0;
+
+    for (int i = 0; i < JOB_BUFFER_SIZE; i++) {
+        job_init(&pjq->jobs[i]);
+    }
 }
 
 /* 
@@ -33,7 +47,43 @@ void pri_jobqueue_init(pri_jobqueue_t* pjq) {
  *      that was on the queue
  */
 job_t* pri_jobqueue_dequeue(pri_jobqueue_t* pjq, job_t* dst) {
-    return NULL;
+    if (pjq == NULL || pri_jobqueue_is_empty(pjq)) {
+        return NULL;
+    }
+
+    int best_index = -1;
+    unsigned int best_priority = UINT_MAX;
+
+    /* Find highest priority job (lowest priority value >= 1) */
+    for (int i = 0; i < JOB_BUFFER_SIZE; i++) {
+        if (pjq->jobs[i].priority >= 1 &&
+            pjq->jobs[i].priority < best_priority) {
+            best_priority = pjq->jobs[i].priority;
+            best_index = i;
+            }
+    }
+
+    if (best_index == -1) {
+        return NULL;
+    }
+
+    job_t* result;
+    if (dst != NULL) {
+        job_copy(dst, &pjq->jobs[best_index]);
+        result = dst;
+    } else {
+        result = job_new();
+        if (result == NULL) {
+            return NULL;
+        }
+        job_copy(result, &pjq->jobs[best_index]);
+    }
+
+    /* Remove job from queue */
+    job_init(&pjq->jobs[best_index]);
+    pjq->size--;
+
+    return result;
 }
 
 /* 
@@ -50,21 +100,46 @@ job_t* pri_jobqueue_dequeue(pri_jobqueue_t* pjq, job_t* dst) {
  *      queue
  */
 void pri_jobqueue_enqueue(pri_jobqueue_t* pjq, job_t* job) {
-    return;
+    if (pjq == NULL || job == NULL) {
+        return;
+    }
+
+    if (pri_jobqueue_is_full(pjq)) {
+        return;
+    }
+
+    if (job->priority < 1) {
+        return;
+    }
+
+    /* Find first empty slot */
+    for (int i = 0; i < JOB_BUFFER_SIZE; i++) {
+        if (pjq->jobs[i].priority == 0) {
+            job_copy(&pjq->jobs[i], job);
+            pjq->size++;
+            return;
+        }
+    }
 }
    
 /* 
  * TODO: you must implement this function.
  */
 bool pri_jobqueue_is_empty(pri_jobqueue_t* pjq) {
-    return true;
+    if (pjq == NULL) {
+        return true;
+    }
+    return pjq->size == 0;
 }
 
 /* 
  * TODO: you must implement this function.
  */
 bool pri_jobqueue_is_full(pri_jobqueue_t* pjq) {
-    return true;
+    if (pjq == NULL) {
+        return true;
+    }
+    return pjq->size >= pjq->buf_size;
 }
 
 /* 
@@ -76,21 +151,58 @@ bool pri_jobqueue_is_full(pri_jobqueue_t* pjq) {
  *      the highest priority job on the queue
  */
 job_t* pri_jobqueue_peek(pri_jobqueue_t* pjq, job_t* dst) {
-    return NULL;
+    if (pjq == NULL || pri_jobqueue_is_empty(pjq)) {
+        return NULL;
+    }
+
+    int best_index = -1;
+    unsigned int best_priority = UINT_MAX;
+
+    for (int i = 0; i < JOB_BUFFER_SIZE; i++) {
+        if (pjq->jobs[i].priority >= 1 &&
+            pjq->jobs[i].priority < best_priority) {
+            best_priority = pjq->jobs[i].priority;
+            best_index = i;
+            }
+    }
+
+    if (best_index == -1) {
+        return NULL;
+    }
+
+    job_t* result;
+    if (dst != NULL) {
+        job_copy(dst, &pjq->jobs[best_index]);
+        result = dst;
+    } else {
+        result = job_new();
+        if (result == NULL) {
+            return NULL;
+        }
+        job_copy(result, &pjq->jobs[best_index]);
+    }
+
+    return result;
 }
 
 /* 
  * TODO: you must implement this function.
  */
 int pri_jobqueue_size(pri_jobqueue_t* pjq) {
-    return 0;
+    if (pjq == NULL) {
+        return 0;
+    }
+    return pjq->size;
 }
 
 /* 
  * TODO: you must implement this function.
  */
 int pri_jobqueue_space(pri_jobqueue_t* pjq) {
-    return 0;
+    if (pjq == NULL) {
+        return 0;
+    }
+    return pjq->buf_size - pjq->size;
 }
 
 /* 
@@ -99,5 +211,8 @@ int pri_jobqueue_space(pri_jobqueue_t* pjq) {
  *      - see pri_jobqeue_new
  */
 void pri_jobqueue_delete(pri_jobqueue_t* pjq) {
-    return;
+    if (pjq == NULL) {
+        return;
+    }
+    free(pjq);
 }
