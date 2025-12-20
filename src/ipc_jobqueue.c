@@ -32,7 +32,10 @@ job_t* ipc_jobqueue_dequeue(ipc_jobqueue_t* ijq, job_t* dst) {
 
     // calling do_critical_work then dequeue job from ipc job queue (ijq)
     do_critical_work(ijq->proc);
-    return pri_jobqueue_dequeue((pri_jobqueue_t*) ijq->addr, dst);
+    job_t* output = pri_jobqueue_dequeue((pri_jobqueue_t*) ijq->addr, dst);
+	done_critical_work(ijq->proc);
+
+	return output;
 }
 
 /* 
@@ -47,6 +50,7 @@ void ipc_jobqueue_enqueue(ipc_jobqueue_t* ijq, job_t* job) {
 
     do_critical_work(ijq->proc);
     pri_jobqueue_enqueue((pri_jobqueue_t*) ijq->addr, job);
+	done_critical_work(ijq->proc);
 }
     
 /* 
@@ -59,7 +63,10 @@ bool ipc_jobqueue_is_empty(ipc_jobqueue_t* ijq) {
         return pri_jobqueue_is_empty(NULL);
 
     do_critical_work(ijq->proc);
-    return pri_jobqueue_is_empty((pri_jobqueue_t*) ijq->addr);
+    job_t* output = pri_jobqueue_is_empty((pri_jobqueue_t*) ijq->addr);
+	done_critical_work(ijq->proc);
+
+	return output;
 }
 
 /* 
@@ -72,7 +79,10 @@ bool ipc_jobqueue_is_full(ipc_jobqueue_t* ijq) {
         return pri_jobqueue_is_full(NULL);
 
     do_critical_work(ijq->proc);
-    return pri_jobqueue_is_full((pri_jobqueue_t*) ijq->addr);
+    job_t* output = pri_jobqueue_is_full((pri_jobqueue_t*) ijq->addr);
+	done_critical_work(ijq->proc);
+
+	return output;
 }
 
 /* 
@@ -85,7 +95,10 @@ job_t* ipc_jobqueue_peek(ipc_jobqueue_t* ijq, job_t* dst) {
         return pri_jobqueue_peek(NULL, dst);
 
     do_critical_work(ijq->proc);
-    return pri_jobqueue_peek((pri_jobqueue_t*) ijq->addr, dst);
+    job_t* output = pri_jobqueue_peek((pri_jobqueue_t*) ijq->addr, dst);
+	done_critical_work(ijq->proc);
+
+	return output;
 }
 
 /* 
@@ -98,7 +111,10 @@ int ipc_jobqueue_size(ipc_jobqueue_t* ijq) {
         return pri_jobqueue_size(NULL);
 
     do_critical_work(ijq->proc);
-    return pri_jobqueue_size((pri_jobqueue_t*) ijq->addr);
+    job_t* output = pri_jobqueue_size((pri_jobqueue_t*) ijq->addr);
+	done_critical_work(ijq->proc);
+
+	return output;
 }
 
 /* 
@@ -111,7 +127,10 @@ int ipc_jobqueue_space(ipc_jobqueue_t* ijq) {
         return pri_jobqueue_space(NULL);
 
     do_critical_work(ijq->proc);
-    return pri_jobqueue_space((pri_jobqueue_t*) ijq->addr);
+    job_t* output = pri_jobqueue_space((pri_jobqueue_t*) ijq->addr);
+	done_critical_work(ijq->proc);
+
+	return output;
 }
 
 /* 
