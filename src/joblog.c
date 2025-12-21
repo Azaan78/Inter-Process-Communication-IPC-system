@@ -100,9 +100,10 @@ job_t* joblog_read(proc_t* proc, int entry_num, job_t* job) {
             fclose(fp);
 
             if (!job)
-                job = job_new_from_str(buf);
+                job = str_to_job(buf, NULL);
             else
-                job_from_str(buf, job);
+                str_to_job(buf, job);
+
 
             errno = saved_errno;
             return job;
