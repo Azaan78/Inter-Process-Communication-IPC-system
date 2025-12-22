@@ -49,45 +49,46 @@ void pri_jobqueue_init(pri_jobqueue_t* pjq) {
  *      that was on the queue
  */
 job_t* pri_jobqueue_dequeue(pri_jobqueue_t* pjq, job_t* dst) {
-    if (pjq == NULL || pri_jobqueue_is_empty(pjq)) {
+    if (!pjq || pjq->size == 0) {
         return NULL;
     }
 
     int best_index = -1;
     unsigned int best_priority = UINT_MAX;
 
-    /* Find highest priority job (lowest priority value >= 1) */
+    // Find highest priority job (lowest priority value >= 1)
     for (int i = 0; i < JOB_BUFFER_SIZE; i++) {
-        if (pjq->jobs[i].priority >= 1 &&
-            pjq->jobs[i].priority < best_priority) {
+    if (pjq->jobs[i].priority >= 1) {
+        if (pjq->jobs[i].priority < best_priority) {
             best_priority = pjq->jobs[i].priority;
             best_index = i;
-            }
+        }
+        // FIFO structure stops early if highest possible priority
+        if (best_priority == 1) {
+            break;
+        }
     }
+	}
 
     if (best_index == -1) {
         return NULL;
     }
 
     job_t* result;
-    if (dst != NULL) {
+    if (dst) {
         job_copy(dst, &pjq->jobs[best_index]);
         result = dst;
-    } else {
-        job_t *src = &pjq->jobs[best_index];
+    }
+	else {
+        job_t* src = &pjq->jobs[best_index];
         result = job_new(src->pid, src->id, src->priority, src->label);
-        if (result == NULL) {
+        if (!result) {
             return NULL;
-        }
-        job_copy(result, &pjq->jobs[best_index]);
+		}
+
     }
 
-    /* Remove job from queue */
     job_init(&pjq->jobs[best_index]);
-    for (int i = best_index; i < JOB_BUFFER_SIZE - 1; i++) {
-        pjq->jobs[i] = pjq->jobs[i + 1];}
-
-    job_init(&pjq->jobs[JOB_BUFFER_SIZE - 1]);
     pjq->size--;
 
     return result;
@@ -143,10 +144,17 @@ bool pri_jobqueue_is_empty(pri_jobqueue_t* pjq) {
  * TODO: you must implement this function.
  */
 bool pri_jobqueue_is_full(pri_jobqueue_t* pjq) {
-    if (pjq == NULL) {
-        return false;
+    if (!pjq) {
+        return true;
+	}
+
+	 for (int i = 0; i < JOB_BUFFER_SIZE; i++) {
+        if (pjq->jobs[i].priority == 0) {
+            return false;   // found space
+        }
     }
-    return pjq->size >= pjq->buf_size;
+
+    return true;
 }
 
 /* 

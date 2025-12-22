@@ -33,12 +33,7 @@ job_t* ipc_jobqueue_dequeue(ipc_jobqueue_t* ijq, job_t* dst) {
     // calling do_critical_work then dequeue job from ipc job queue (ijq)
     do_critical_work(ijq->proc);
 
-    pri_jobqueue_t* q = (pri_jobqueue_t*) ijq->addr;
-
-    if (pri_jobqueue_is_empty(q))
-        return NULL;
-
-    return pri_jobqueue_dequeue(q, dst);
+    return pri_jobqueue_dequeue((pri_jobqueue_t*) ijq->addr, dst);
 }
 
 /* 
@@ -47,16 +42,12 @@ job_t* ipc_jobqueue_dequeue(ipc_jobqueue_t* ijq, job_t* dst) {
  * - see ipc_jobqueue_dequeue hint
  */
 void ipc_jobqueue_enqueue(ipc_jobqueue_t* ijq, job_t* job) {
-    if (!ijq || !job)
+    if (!ijq)
         return;
 
     do_critical_work(ijq->proc);
-    pri_jobqueue_t* q = (pri_jobqueue_t*) ijq->addr;
 
-    if (pri_jobqueue_is_full(q))
-        return;
-
-    pri_jobqueue_enqueue(q, job);
+    pri_jobqueue_enqueue( (pri_jobqueue_t*) ijq->addr, job);
 }
 
 
@@ -82,7 +73,7 @@ bool ipc_jobqueue_is_empty(ipc_jobqueue_t* ijq) {
  */
 bool ipc_jobqueue_is_full(ipc_jobqueue_t* ijq) {
     if (!ijq)
-        return false;
+        return true;
 
     do_critical_work(ijq->proc);
 

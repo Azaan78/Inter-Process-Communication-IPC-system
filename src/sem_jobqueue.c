@@ -128,7 +128,7 @@ job_t* sem_jobqueue_dequeue(sem_jobqueue_t* sjq, job_t* dst) {
     job_t* result = ipc_jobqueue_dequeue(sjq->ijq, dst);
 
     sem_post(sjq->mutex);
-    sem_post(sjq->empty);
+	sem_post(sjq->empty);
 
     return result;
 }
@@ -163,13 +163,7 @@ bool sem_jobqueue_is_empty(sem_jobqueue_t* sjq) {
     if (!sjq)
         return true;
 
-    if (sem_wait(sjq->mutex) == -1)
-        return true;
-
-    bool result = ipc_jobqueue_is_empty(sjq->ijq);
-
-    sem_post(sjq->mutex);
-    return result;
+    return ipc_jobqueue_is_empty(sjq->ijq);
 }
 
 /* 
@@ -180,13 +174,7 @@ bool sem_jobqueue_is_full(sem_jobqueue_t* sjq) {
     if (!sjq)
         return true;
 
-    if (sem_wait(sjq->mutex) == -1)
-        return true;
-
-    bool result = ipc_jobqueue_is_full(sjq->ijq);
-
-    sem_post(sjq->mutex);
-    return result;
+    return ipc_jobqueue_is_full(sjq->ijq);
 }
 
 /* 
@@ -197,13 +185,7 @@ job_t* sem_jobqueue_peek(sem_jobqueue_t* sjq, job_t* dst) {
     if (!sjq)
         return NULL;
 
-    if (sem_wait(sjq->mutex) == -1)
-        return NULL;
-
-    job_t* result = ipc_jobqueue_peek(sjq->ijq, dst);
-
-    sem_post(sjq->mutex);
-    return result;
+    return ipc_jobqueue_peek(sjq->ijq, dst);
 }
 
 /* 
@@ -211,16 +193,11 @@ job_t* sem_jobqueue_peek(sem_jobqueue_t* sjq, job_t* dst) {
  * sem_jobqueue.h
  */
 int sem_jobqueue_size(sem_jobqueue_t* sjq) {
-    if (!sjq)
-        return -1;
+    if (!sjq) {
+        return 0;
+	}
 
-    if (sem_wait(sjq->mutex) == -1)
-        return -1;
-
-    int size = ipc_jobqueue_size(sjq->ijq);
-
-    sem_post(sjq->mutex);
-    return size;
+	return ipc_jobqueue_size(sjq->ijq);
 }
 
 /* 
@@ -229,15 +206,9 @@ int sem_jobqueue_size(sem_jobqueue_t* sjq) {
  */
 int sem_jobqueue_space(sem_jobqueue_t* sjq) {
     if (!sjq)
-        return -1;
+        return 0;
 
-    if (sem_wait(sjq->mutex) == -1)
-        return -1;
-
-    int space = ipc_jobqueue_space(sjq->ijq);
-
-    sem_post(sjq->mutex);
-    return space;
+    return ipc_jobqueue_space(sjq->ijq);
 }
 
 /* 

@@ -92,28 +92,32 @@ job_t* joblog_read(proc_t* proc, int entry_num, job_t* job) {
         return NULL;
     }
 
-    char buf[JOB_STR_SIZE + 1];
-    int current = 0;
+    long offset = (long)entry_num * JOB_STR_SIZE;
 
-    while (fgets(buf, sizeof(buf), fp)) {
-        if (current == entry_num) {
-            fclose(fp);
-
-            if (!job)
-                job = str_to_job(buf, NULL);
-            else
-                str_to_job(buf, job);
-
-
-            errno = saved_errno;
-            return job;
-        }
-        current++;
+    if (fseek(fp, offset, SEEK_SET) != 0) {
+        fclose(fp);
+        errno = saved_errno;
+        return NULL;
     }
 
+    char buf[JOB_STR_SIZE + 1];
+    size_t n = fread(buf, 1, JOB_STR_SIZE, fp);
     fclose(fp);
+
+    if (n != JOB_STR_SIZE) {
+        errno = saved_errno;
+        return NULL;
+    }
+
+    buf[JOB_STR_SIZE - 1] = '\0';
+
+    if (!job)
+        job = str_to_job(buf, NULL);
+    else
+        str_to_job(buf, job);
+
     errno = saved_errno;
-    return NULL;
+    return job;
 }
 
 
