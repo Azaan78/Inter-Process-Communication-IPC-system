@@ -32,9 +32,13 @@ job_t* ipc_jobqueue_dequeue(ipc_jobqueue_t* ijq, job_t* dst) {
 
     // calling do_critical_work then dequeue job from ipc job queue (ijq)
     do_critical_work(ijq->proc);
-    job_t* output = pri_jobqueue_dequeue((pri_jobqueue_t*) ijq->addr, dst);
 
-	return output;
+    job_t temp;
+    if (!dst)
+        dst = &temp;
+
+    return pri_jobqueue_dequeue((pri_jobqueue_t*) ijq->addr, dst);
+    ;
 }
 
 /* 
@@ -91,9 +95,13 @@ job_t* ipc_jobqueue_peek(ipc_jobqueue_t* ijq, job_t* dst) {
         return pri_jobqueue_peek(NULL, dst);
 
     do_critical_work(ijq->proc);
-    job_t* output = pri_jobqueue_peek((pri_jobqueue_t*) ijq->addr, dst);
 
-	return output;
+    job_t tmp;
+    if (!dst)
+        dst = &tmp;
+
+
+    return pri_jobqueue_peek((pri_jobqueue_t*) ijq->addr, dst);
 }
 
 /* 
