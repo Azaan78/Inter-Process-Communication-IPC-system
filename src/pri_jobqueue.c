@@ -84,6 +84,10 @@ job_t* pri_jobqueue_dequeue(pri_jobqueue_t* pjq, job_t* dst) {
 
     /* Remove job from queue */
     job_init(&pjq->jobs[best_index]);
+    for (int i = best_index; i < JOB_BUFFER_SIZE - 1; i++) {
+        pjq->jobs[i] = pjq->jobs[i + 1];}
+
+    job_init(&pjq->jobs[JOB_BUFFER_SIZE - 1]);
     pjq->size--;
 
     return result;
@@ -140,7 +144,7 @@ bool pri_jobqueue_is_empty(pri_jobqueue_t* pjq) {
  */
 bool pri_jobqueue_is_full(pri_jobqueue_t* pjq) {
     if (pjq == NULL) {
-        return true;
+        return false;
     }
     return pjq->size >= pjq->buf_size;
 }
